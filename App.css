@@ -1,0 +1,28 @@
+/* app.css is for global styles */
+header h1 {  
+  margin-bottom: 20px; /* Reduce space below "CRIM" */
+  color: white;
+  font-size: 36px;
+}
+
+header p { 
+  margin-top: 0; /* Remove extra space above "The University of Tampa" */
+  color: white;
+  font-size: 18px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.App {
+  text-align: center;
+  width: 100%;
+  padding: 20px;
+}

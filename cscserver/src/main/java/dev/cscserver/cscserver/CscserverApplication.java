@@ -1,13 +1,14 @@
-package com.example._Server;
+package dev.cscserver.cscserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application {
+public class CscserverApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(CscserverApplication.class, args);
+		
 	}
 
 }

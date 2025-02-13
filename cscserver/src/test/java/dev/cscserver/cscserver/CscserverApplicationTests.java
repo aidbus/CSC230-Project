@@ -1,10 +1,10 @@
-package com.example._Server;
+package dev.cscserver.cscserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ApplicationTests {
+class CscserverApplicationTests {
 
 	@Test
 	void contextLoads() {

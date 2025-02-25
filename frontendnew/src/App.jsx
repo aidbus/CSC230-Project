@@ -2,11 +2,11 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 
-import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
-import Header from "./components/Header";
-import LoginPage from "./pages/LoginPage"; // Import Login Page
+import HomePage from "./HomePage";
+import AboutPage from "./AboutPage";
+import ContactPage from "./ContactPage";
+import Header from "./Header";
+import LoginPage from "./LoginPage"; // Import Login Page
 
 function App() {
   return (

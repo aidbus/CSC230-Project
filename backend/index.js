@@ -1,0 +1,29 @@
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import authRoute from "./Routes/AuthRoute.js";
+const app = express();
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+dotenv.config();
+const {MONGO_URL, PORT} = process.env;
+
+mongoose
+    .connect(MONGO_URL)
+    .then(() => console.log("Successfully connected to MongoDB"))
+    .catch((err) => console.log(`DB CONNECTION ERROR ${err}`));
+
+app.listen (PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+})
+
+app.use (
+    cors({
+        origin: ["http://localhost:3000"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true,
+    })
+);
+app.use(cookieParser());
+app.use(express.json());
+app.use("/", authRoute);

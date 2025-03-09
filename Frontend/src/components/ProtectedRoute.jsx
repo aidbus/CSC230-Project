@@ -1,17 +1,17 @@
+import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 
-const ProtectedRoute = ({ allowedRoles }) => {
-  const userRole = localStorage.getItem("userRole"); // Get stored role
+const ProtectedRoute = ({ allowedRoles, user }) => {
+  const userRole = localStorage.getItem("userRole");
 
-  console.log("Stored Role:", userRole); // Debugging log
-  console.log("Allowed Roles:", allowedRoles);
-
-  if (!userRole || !allowedRoles.includes(userRole)) {
-    console.log("Access denied. Redirecting to login.");
-    return <Navigate to="/login" replace />;
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
-  console.log("Access granted.");
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/" />;
+  }
+
   return <Outlet />;
 };
 

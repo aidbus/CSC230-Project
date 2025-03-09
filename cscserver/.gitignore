@@ -34,3 +34,5 @@ build/
 
 ### ENV FILES ###
 .env
+
+src\main\resources\firebase-adminsdk.json

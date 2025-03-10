@@ -24,3 +24,30 @@ export const Signup = async (req, res, next) => {
         console.error(error);
     }
 }
+
+export const Login = async (req, res, next) => {
+    try {
+        const {email, password} = req.body;
+        if(!email || !password) {
+            return res.json ({message: "Please enter the required fields"});
+        }
+        const user = await User.findOne({email});
+        if (!user) {
+            return res.json ({message: "Invalid email or password"});
+        }
+        const auth = await bcrypt.compare(password, user.password)
+        if (!auth){
+            return res.json({message: "Invalid email or password"});
+        }
+        const token = generateToken(user._id);
+        res.cookie("token", token, {
+            withCredentials: true,
+            httpOnly: false,
+        });
+        res.status(201).json({message: "Successful login!", success: true});
+        next();
+    }
+    catch (error) {
+        console.error(error);
+    }
+}

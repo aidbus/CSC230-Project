@@ -1,105 +1,91 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "./LoginPage.css"; // Import styles
+import React, {useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
-import { signInWithEmailAndPassword, getIdToken } from "firebase/auth";
-import { auth } from "../firebase/firebase"; // Ensure Firebase is initialized properly
+import {ToastContainer, toast} from "react-toastify";
+import "./LoginPage.css";
 
-function LoginPage({ setUserRole }) {
-  const [userType, setUserType] = useState("student");
-  const [credentials, setCredentials] = useState({ id: "", password: "" });
-  const navigate = useNavigate();
-
-  const handleLogin = async () => {
-    if (!credentials.id || !credentials.password) {
-      alert("Please enter both your ID and password.");
-      return;
-    }
-
-    try {
-      // Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        credentials.id,
-        credentials.password
-      );
-      const user = userCredential.user;
-
-      // Get Firebase Token
-      const token = await getIdToken(user);
-      localStorage.setItem("token", token);
-
-      // Send token to backend for role verification
-      const response = await axios.post("http://localhost:8080/auth/login", {
-        token: token,
-      });
-      
-      const role = response.data.role; // Assume backend returns user role
-      localStorage.setItem("userRole", role);
-      setUserRole(role);
-
-      alert("Login Successful!");
-      navigate("/");
-    } catch (error) {
-      alert("Invalid login");
-    }
-  };
-
-  return (
-    <div className="login-container">
-      <h2>Login</h2>
-      
-      {/* Selection Buttons */}
-      <div className="user-selection">
-        <label>
-          <input 
-            type="radio" 
-            name="userType" 
-            value="student" 
-            checked={userType === "student"} 
-            onChange={() => setUserType("student")} 
-          />
-          Student
-        </label>
-
-        <label>
-          <input 
-            type="radio" 
-            name="userType" 
-            value="faculty" 
-            checked={userType === "faculty"} 
-            onChange={() => setUserType("faculty")} 
-          />
-          Faculty
-        </label>
-      </div>
-
-      {/* Login Form */}
-      <div className="login-form">
-        <h3>{userType === "student" ? "Student Login" : "Faculty Login"}</h3>
-        <input 
-          type="text" 
-          placeholder="Email" 
-          onChange={e => setCredentials({ ...credentials, id: e.target.value })} 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          onChange={e => setCredentials({ ...credentials, password: e.target.value })} 
-        />
-        <button 
-          onClick={handleLogin} 
-          disabled={!credentials.id || !credentials.password}
-          style={{
-            opacity: (!credentials.id || !credentials.password) ? 0.5 : 1,
-            cursor: (!credentials.id || !credentials.password) ? "not-allowed" : "pointer"
-          }}
-        >
-          Login
-        </button>
-      </div>
-    </div>
-  );
-}
+const LoginPage = () => {
+    const navigate = useNavigate();
+    const [inputValue, setInputValue] = useState({
+        email: "",
+        password: "",
+    });
+    const {email, password} = inputValue;
+    const handleOnChange = (e) => {
+        const {name, value} = e.target;
+        setInputValue({
+            ...inputValue,
+            [name]: value,
+        });
+    };
+    const handleError = (err) =>
+        toast.error(err, {
+            position: "top-center",
+        });
+    
+    const handleSuccess = (msg) =>
+        toast.success(msg, {
+            position: "bottom-left"
+        });
+    
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const {data} =await axios.post(
+                    "http://localhost:4000/login",
+                    {
+                        ...inputValue
+                    },
+                    {withCredentials: true}
+                );
+                console.log(data);
+                const {success, message} = data;
+                if (success) {
+                    handleSuccess(message);
+                    setTimeout(() => {
+                        navigate("/");
+                    }, 1000);
+                }
+                else {
+                    handleError(message);
+                }
+            }
+            catch (error) {
+                console.log(error);
+            }
+            setInputValue ({
+                ...inputValue,
+                email: "",
+                password: "",
+            });
+        };
+    return (
+        <div className="form_container">
+            <h2>Login</h2>
+            <form onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email">Email</label>
+              <input 
+                type="email" 
+                name="email"
+                value={email}
+                placeholder="Email" 
+                onChange={handleOnChange}/>
+              </div>
+              <div>
+                <label htmlFor="password">Password</label>
+                <input 
+                  type="password" 
+                  name="password"
+                  value={password}
+                  placeholder="Password"
+                  onChange={handleOnChange} required />
+              </div>
+                <button type="submit">Login</button>
+            </form>
+            <ToastContainer />
+        </div>
+    );
+};
 
 export default LoginPage;

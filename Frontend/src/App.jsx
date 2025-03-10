@@ -10,9 +10,6 @@ import ReviewPage from "./pages/ReviewPage";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
-//import {auth, db} from "./firebase/firebase";
-//import {doc, getDoc} from "firebase/firestore";
-//import { onAuthStateChanged } from "firebase/auth";
 
 function App() {
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || null);

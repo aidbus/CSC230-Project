@@ -8,4 +8,4 @@ router.post("/signup", Signup);
 router.post("/login", Login);
 router.post("/", userVerification);
 
-export default router; /////////////////////////////////////// THIS STUFF MIGHT CAUSE ERRORS, BECAUSE THE IMPORT ON GUIDE IS 
+export default router; 

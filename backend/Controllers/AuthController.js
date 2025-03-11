@@ -33,21 +33,22 @@ export const Login = async (req, res, next) => {
         }
         const user = await User.findOne({email});
         if (!user) {
-            return res.json ({message: "Invalid email or password"});
+            return res.status(401).json ({message: "Invalid email or password"});
         }
         const auth = await bcrypt.compare(password, user.password)
         if (!auth){
-            return res.json({message: "Invalid email or password"});
+            return res.status(401).json({message: "Invalid email or password"});
         }
         const token = generateToken(user._id);
         res.cookie("token", token, {
             withCredentials: true,
-            httpOnly: false,
+            httpOnly: true,
         });
-        res.status(201).json({message: "Successful login!", success: true});
+        res.status(200).json({message: "Successful login!", success: true});
         next();
     }
     catch (error) {
         console.error(error);
+        res.status(500).json({message: "Server error"});
     }
 }

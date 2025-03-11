@@ -20,7 +20,7 @@ const LoginPage = () => {
     };
     const handleError = (err) =>
         toast.error(err, {
-            position: "top-center",
+            position: "top-center", ////////////////////////////////////Why does this not display anything?
         });
     
     const handleSuccess = (msg) =>
@@ -60,7 +60,7 @@ const LoginPage = () => {
             });
         };
     return (
-        <div className="form_container">
+        <div className="login-container">
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
               <div>

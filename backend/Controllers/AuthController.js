@@ -44,7 +44,7 @@ export const Login = async (req, res, next) => {
             withCredentials: true,
             httpOnly: true,
         });
-        res.status(200).json({message: "Successful login!", success: true});
+        res.status(200).json({message: "Successful login!", success: true, role: user.role});
         next();
     }
     catch (error) {

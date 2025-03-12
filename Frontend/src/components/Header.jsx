@@ -12,6 +12,8 @@ function Header({ userRole, setUserRole }) {
     navigate("/"); // Redirect to homepage
   };
 
+  const getUserRole = localStorage.getItem("userRole");
+
   return (
     <header>
       {/* Small top banner with Logo & University Name */}
@@ -37,16 +39,17 @@ function Header({ userRole, setUserRole }) {
           <li><Link to="/about">About</Link></li>
           <li><Link to="/contact">Contact</Link></li>
 
-          {!userRole && <li><Link to="/login">Login</Link></li>}
+          
+          {localStorage.getItem("userRole") === null && <li><Link to="/login">Login</Link></li>}
           
           {/* Only show Upload if logged in as a Student */}
-          {userRole === "student" && <li><Link to="/upload">Upload Paper</Link></li>}
+          {localStorage.getItem("userRole") === "student" && <li><Link to="/upload">Upload Paper</Link></li>}
 
           {/* Only show Review if logged in as Faculty */}
-          {userRole === "faculty" && <li><Link to="/review">Review Submissions</Link></li>}
+          {localStorage.getItem("userRole") === "faculty" && <li><Link to="/review">Review Submissions</Link></li>}
           
           {/* Show Logout button if user is logged in */}
-          {userRole && (
+          {localStorage.getItem("userRole") && (
             <li>
               <button onClick={handleLogout} className="logout-button">Logout</button>
             </li>

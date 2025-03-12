@@ -30,8 +30,9 @@ const LoginPage = () => {
                 {withCredentials: true}
             );
             console.log(data);
-            const {success, message} = data;
+            const {success, message, role} = data;
             if (success) {
+                localStorage.setItem("userRole", role)
                 toast.success(message, {position: "bottom-left"});
                 setTimeout(() => {
                     navigate("/");

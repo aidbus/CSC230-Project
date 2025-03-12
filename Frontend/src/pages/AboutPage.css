@@ -1,0 +1,6 @@
+.paragraph {
+    text-align: center;
+    width: 100em;
+    /*border: 1px solid #000000;*/
+    word-break: keep-all;
+}

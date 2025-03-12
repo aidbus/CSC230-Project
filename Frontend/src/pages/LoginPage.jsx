@@ -18,47 +18,40 @@ const LoginPage = () => {
             [name]: value,
         });
     };
-    const handleError = (err) =>
-        toast.error(err, {
-            position: "top-center", ////////////////////////////////////Why does this not display anything?
-        });
     
-    const handleSuccess = (msg) =>
-        toast.success(msg, {
-            position: "bottom-left"
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const {data} =await axios.post(
+                "http://localhost:4000/login",
+                {
+                    ...inputValue
+                },
+                {withCredentials: true}
+            );
+            console.log(data);
+            const {success, message} = data;
+            if (success) {
+                toast.success(message, {position: "bottom-left"});
+                setTimeout(() => {
+                    navigate("/");
+                }, 1000);
+            }
+            else {
+                toast.error(message, {position: "bottom-left"});
+            }
+        }
+        // If the user was unable to login, display an error message
+        catch (error) {
+            console.log(error);
+            toast.error("Login failed, please try again", {position: "bottom-left"});
+        }
+        setInputValue ({
+            ...inputValue,
+            email: "",
+            password: "",
         });
-    
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const {data} =await axios.post(
-                    "http://localhost:4000/login",
-                    {
-                        ...inputValue
-                    },
-                    {withCredentials: true}
-                );
-                console.log(data);
-                const {success, message} = data;
-                if (success) {
-                    handleSuccess(message);
-                    setTimeout(() => {
-                        navigate("/");
-                    }, 1000);
-                }
-                else {
-                    handleError(message);
-                }
-            }
-            catch (error) {
-                console.log(error);
-            }
-            setInputValue ({
-                ...inputValue,
-                email: "",
-                password: "",
-            });
-        };
+    };
     return (
         <div className="login-container">
             <h2>Login</h2>
@@ -82,6 +75,8 @@ const LoginPage = () => {
                   onChange={handleOnChange} required />
               </div>
                 <button type="submit">Login</button>
+                <span>New? Make an account here <Link to={"/register"}>Register</Link>
+                </span>
             </form>
             <ToastContainer />
         </div>

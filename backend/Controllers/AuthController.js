@@ -33,11 +33,11 @@ export const Login = async (req, res, next) => {
         }
         const user = await User.findOne({email});
         if (!user) {
-            return res.status(401).json ({message: "Invalid email or password"});
+            return res.status(401).json ({message: "Invalid email or password", success: false});
         }
         const auth = await bcrypt.compare(password, user.password)
         if (!auth){
-            return res.status(401).json({message: "Invalid email or password"});
+            return res.status(401).json({message: "Invalid email or password", success: false});
         }
         const token = generateToken(user._id);
         res.cookie("token", token, {
@@ -49,6 +49,6 @@ export const Login = async (req, res, next) => {
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({message: "Server error"});
+        res.status(500).json({message: "Server error", success: false});
     }
 }

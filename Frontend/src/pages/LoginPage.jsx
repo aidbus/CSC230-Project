@@ -1,104 +1,91 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
 
-function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = () => {
   const navigate = useNavigate();
+  const [inputValue, setInputValue] = useState({
+    email: "",
+    password: "",
+  });
+
+  const { email, password } = inputValue;
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setInputValue({
+      ...inputValue,
+      [name]: value,
+    });
+  };
+
+  const handleError = (err) =>
+    toast.error(err, { position: "bottom-left" });
+
+  const handleSuccess = (msg) =>
+    toast.success(msg, { position: "bottom-left" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    
     try {
-      // Make sure email and password are not empty
-      if (!email || !password) {
-        setError('Email and password are required');
-        return;
-      }
-      
-      // Add proper validation for email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError('Please enter a valid email address');
-        return;
-      }
-
-      // Make the request to the correct backend URL
-      const response = await axios.post(
-        'http://localhost:4000/auth/login', // Correct backend endpoint
-        { email, password },
+      const { data } = await axios.post(
+        "http://localhost:4000/api/auth/login",  // Adjust API endpoint if necessary
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+          email,
+          password,
+        },
+        { withCredentials: true }
       );
-
-      // Handle successful login
-      const { token, user } = response.data;
-      
-      // Store token in localStorage or a secure cookie
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Redirect to dashboard or home page
-      navigate('/dashboard');
-      
-    } catch (err) {
-      console.error('Login error:', err);
-      
-      // Handle different error scenarios
-      if (err.response) {
-        // The server responded with an error status
-        if (err.response.status === 400) {
-          setError('Invalid credentials. Please check your email and password.');
-        } else if (err.response.status === 429) {
-          setError('Too many login attempts. Please try again later.');
-        } else {
-          setError(err.response.data.message || 'Login failed. Please try again.');
-        }
-      } else if (err.request) {
-        // The request was made but no response was received
-        setError('No response from server. Please check your internet connection.');
+      const { success, message } = data;
+      if (success) {
+        handleSuccess(message);
+        setTimeout(() => {
+          navigate("/dashboard");  // Redirect to the dashboard or desired page
+        }, 1000);
       } else {
-        // Something else caused the error
-        setError('Login failed. Please try again.');
+        handleError(message);
       }
+    } catch (error) {
+      handleError("Login failed. Please try again.");
+      console.log(error);
     }
   };
 
   return (
-    <div className="login-container">
+    <div className="form_container">
       <h2>Login</h2>
-      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div>
           <label htmlFor="email">Email</label>
           <input
             type="email"
-            id="email"
+            name="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            placeholder="Enter your email"
+            onChange={handleOnChange}
           />
         </div>
-        <div className="form-group">
+        <div>
           <label htmlFor="password">Password</label>
           <input
             type="password"
-            id="password"
+            name="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            placeholder="Enter your password"
+            onChange={handleOnChange}
           />
         </div>
         <button type="submit">Login</button>
       </form>
+      <div className="signup-link">
+        <span>
+          Don't have an account? <Link to="/register">Sign Up</Link>
+        </span>
+      </div>
+      <ToastContainer />
     </div>
   );
-}
+};
 
-export default LoginPage;
+export default Login;

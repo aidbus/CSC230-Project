@@ -1,124 +1,104 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Ensure toast styling is applied
-import './LoginPage.css';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
-    const navigate = useNavigate();
+function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-    // State for both login and signup
-    const [isSignUp, setIsSignUp] = useState(false); // Switch between login and signup form
-    const [inputValue, setInputValue] = useState({
-        email: "",
-        password: "",
-        role: "student", // Default role for signup
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      // Make sure email and password are not empty
+      if (!email || !password) {
+        setError('Email and password are required');
+        return;
+      }
+      
+      // Add proper validation for email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address');
+        return;
+      }
 
-    const { email, password, role } = inputValue;
-
-    const handleOnChange = (e) => {
-        const { name, value } = e.target;
-        setInputValue({
-            ...inputValue,
-            [name]: value,
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const endpoint = isSignUp ? "http://localhost:4000/register" : "http://localhost:4000/login";
-        try {
-            const response = await axios.post(
-                endpoint,
-                { email, password, ...(isSignUp ? { role } : {}) },
-                { withCredentials: true }
-            );
-
-            const { data } = response;
-            const { success, message, role: userRole } = data;
-
-            if (success) {
-                if (isSignUp) {
-                    toast.success(message, { position: "bottom-left" });
-                    setTimeout(() => navigate("/login"), 1000); // Redirect to login after sign-up
-                } else {
-                    localStorage.setItem("userRole", userRole);
-                    toast.success(message, { position: "bottom-left" });
-                    setTimeout(() => navigate("/"), 1000); // Redirect to home after login
-                }
-            } else {
-                toast.error(message, { position: "bottom-left" });
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error(`${isSignUp ? "Sign-up" : "Login"} failed, please try again`, { position: "bottom-left" });
+      // Make the request to the correct backend URL
+      const response = await axios.post(
+        'http://localhost:4000/auth/login', // Correct backend endpoint
+        { email, password },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
+      );
 
-        setInputValue({
-            email: "",
-            password: "",
-            role: "student",
-        });
-    };
+      // Handle successful login
+      const { token, user } = response.data;
+      
+      // Store token in localStorage or a secure cookie
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // Redirect to dashboard or home page
+      navigate('/dashboard');
+      
+    } catch (err) {
+      console.error('Login error:', err);
+      
+      // Handle different error scenarios
+      if (err.response) {
+        // The server responded with an error status
+        if (err.response.status === 400) {
+          setError('Invalid credentials. Please check your email and password.');
+        } else if (err.response.status === 429) {
+          setError('Too many login attempts. Please try again later.');
+        } else {
+          setError(err.response.data.message || 'Login failed. Please try again.');
+        }
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your internet connection.');
+      } else {
+        // Something else caused the error
+        setError('Login failed. Please try again.');
+      }
+    }
+  };
 
-    return (
-        <div className="auth-container">
-            <h2>{isSignUp ? "Sign Up" : "Login"}</h2>
-            <form onSubmit={handleSubmit} className="auth-form">
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={email}
-                        onChange={handleOnChange}
-                        placeholder="Enter your email"
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={password}
-                        onChange={handleOnChange}
-                        placeholder="Enter your password"
-                        required
-                    />
-                </div>
-
-                {/* Role Dropdown for Sign Up */}
-                {isSignUp && (
-                    <div>
-                        <label htmlFor="role">Role</label>
-                        <select
-                            name="role"
-                            value={role}
-                            onChange={handleOnChange}
-                            required
-                        >
-                            <option value="student">Student</option>
-                            <option value="faculty">Faculty</option>
-                        </select>
-                    </div>
-                )}
-
-                <button type="submit">{isSignUp ? "Sign Up" : "Login"}</button>
-                <span>
-                    {isSignUp ? (
-                        <>Already have an account? <Link to="#" onClick={() => setIsSignUp(false)}>Login</Link></>
-                    ) : (
-                        <>New? Create an account <Link to="#" onClick={() => setIsSignUp(true)}>Register</Link></>
-                    )}
-                </span>
-            </form>
-            <ToastContainer />
+  return (
+    <div className="login-container">
+      <h2>Login</h2>
+      {error && <div className="error-message">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
-    );
-};
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+}
 
 export default LoginPage;

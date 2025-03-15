@@ -1,58 +1,55 @@
 import React, { useState } from "react";
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [inputValue, setInputValue] = useState ({
+  const [inputValue, setInputValue] = useState({
     email: "",
     password: "",
     role: "",
   });
 
-  const {email, password, role} = inputValue;
+  const { email, password, role } = inputValue;
+
   const handleOnChange = (e) => {
-    const {name, value} = e.target;
-    setInputValue ({
+    const { name, value } = e.target;
+    setInputValue({
       ...inputValue,
       [name]: value,
     });
   };
 
   const handleError = (err) =>
-    toast.error(err, {position: "bottom-left"});
+    toast.error(err, { position: "bottom-left" });
 
-  const handleSuccess = (msg) => 
-    toast.success (msg, {position: "bottom-left"});
+  const handleSuccess = (msg) =>
+    toast.success(msg, { position: "bottom-left" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const {data} = await axios.post (
-        "http://localhost:4000/signup",
+      const { data } = await axios.post(
+        "http://localhost:4000/api/auth/signup", // Corrected route
         {
           ...inputValue,
         },
-        {withCredentials: true}
+        { withCredentials: true }
       );
-      const {success, message} = data;
+      const { success, message } = data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
-          navigate("/");
-        }, 1000)
-      }
-      else {
+          navigate("/login");
+        }, 1000);
+      } else {
         handleError(message);
       }
-    }
-    catch(error) {
+    } catch (error) {
       console.log(error);
-
     }
     setInputValue({
-      ...inputValue,
       email: "",
       password: "",
       role: "",
@@ -75,13 +72,16 @@ const Register = () => {
         </div>
         <div>
           <label htmlFor="role">Role</label>
-          <input
-            type="text"
+          <select
             name="role"
             value={role}
-            placeholder="Enter your role"
             onChange={handleOnChange}
-          />
+            required
+          >
+            <option value="">Select Role</option>
+            <option value="student">Student</option>
+            <option value="faculty">Faculty</option>
+          </select>
         </div>
         <div>
           <label htmlFor="password">Password</label>
@@ -95,13 +95,12 @@ const Register = () => {
         </div>
         <button type="submit">Submit</button>
         <span>
-          Already have an account? <Link to={"/login"}>Login</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </span>
       </form>
       <ToastContainer />
     </div>
   );
-
-}
+};
 
 export default Register;

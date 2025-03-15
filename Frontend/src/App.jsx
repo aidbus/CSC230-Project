@@ -34,12 +34,10 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} /> 
-
+        <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} />
         <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
           <Route path="/upload" element={<UploadPage />} />
         </Route>
-
         <Route element={<ProtectedRoute allowedRoles={["faculty"]} />}>
           <Route path="/review" element={<ReviewPage />} />
         </Route>

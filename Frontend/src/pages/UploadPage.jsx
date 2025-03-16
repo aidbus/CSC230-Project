@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./UploadPage.css"; // Ensure styles are applied
 
 function UploadPage() {
@@ -27,17 +30,31 @@ function UploadPage() {
     setFile(droppedFile);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!file) {
-      alert("⚠️ Please select a file before submitting.");
+      toast.warn("⚠️ Please select a file before submitting.");
       return;
     }
-    console.log("File uploaded:", file);
-    console.log("Description:", description);
-    alert("✅ File uploaded successfully!");
-    setFile(null);
-    setDescription("");
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+    formData.append("description", description);
+
+    try {
+      const response = await axios.post("/api/pdfs/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("File uploaded successfully", response.data);
+      toast.success("✅ File uploaded successfully!");
+      setFile(null);
+      setDescription("");
+    } catch (error) {
+      console.error("Error uploading file", error);
+      toast.error("❌ Error uploading file");
+    }
   };
 
   return (
@@ -70,6 +87,9 @@ function UploadPage() {
       <button onClick={handleSubmit} disabled={!file}>
         Upload
       </button>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </div>
   );
 }

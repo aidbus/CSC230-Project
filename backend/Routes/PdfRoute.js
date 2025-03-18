@@ -11,7 +11,7 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const router = express.Router();
-router.use(cookieParser()); // Ensure cookies can be read
+router.use(cookieParser());
 
 const conn = mongoose.createConnection(process.env.MONGO_URL, {
   useNewUrlParser: true,
@@ -45,7 +45,7 @@ const authenticateUser = async (req, res, next) => {
         return res.status(401).json({ error: "User not found" });
       }
 
-      req.user = user; // Store user info in request
+      req.user = user;
       next();
     });
   } catch (error) {
@@ -68,7 +68,7 @@ router.post("/upload-pdf", authenticateUser, upload.single("pdf"), async (req, r
     readableStream.push(null);
 
     const uploadStream = gridFSBucket.openUploadStream(req.file.originalname, {
-      metadata: { uploadedBy: req.user._id }, // Store user ID in metadata
+      metadata: { uploadedBy: req.user._id, status: "Pending", comment: "" },
     });
 
     readableStream.pipe(uploadStream);
@@ -107,7 +107,7 @@ router.get("/all", authenticateUser, async (req, res) => {
   }
 });
 
-// Fetch PDFs uploaded by the logged-in student
+// Fetch PDFs uploaded by the logged-in student (With Faculty Comments)
 router.get("/my-pdfs", authenticateUser, async (req, res) => {
   try {
     if (req.user.role !== "student") {
@@ -132,7 +132,6 @@ router.get("/view/:fileId", authenticateUser, async (req, res) => {
       return res.status(404).json({ error: "File not found" });
     }
 
-    // Ensure students can only view their own PDFs
     if (req.user.role === "student" && file.metadata.uploadedBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Access denied. You can only view your own PDFs." });
     }
@@ -148,4 +147,60 @@ router.get("/view/:fileId", authenticateUser, async (req, res) => {
   }
 });
 
+// Faculty Approval/Rejection with Comments
+router.put("/update-status/:fileId", authenticateUser, async (req, res) => {
+  try {
+    if (req.user.role !== "faculty") {
+      return res.status(403).json({ error: "Access denied. Faculty only." });
+    }
+
+    const { status, comment } = req.body;
+    const fileId = new mongoose.Types.ObjectId(req.params.fileId);
+
+    if (!["Approved", "Rejected", "Pending"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value." });
+    }
+
+    const result = await conn.db.collection("pdfs.files").updateOne(
+      { _id: fileId },
+      { $set: { "metadata.status": status, "metadata.comment": comment } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: "File not found or status unchanged." });
+    }
+
+    if (status === "Approved") {
+      const file = await conn.db.collection("pdfs.files").findOne({ _id: fileId });
+      await conn.db.collection("approved_pdfs").insertOne({
+        _id: file._id,
+        filename: file.filename,
+        uploadedBy: file.metadata.uploadedBy,
+        comment,
+      });
+    }
+
+    res.json({ message: `PDF marked as ${status} with comment.` });
+  } catch (error) {
+    console.error("❌ Error updating PDF status:", error);
+    res.status(500).json({ error: "An error occurred while updating status." });
+  }
+});
+
+// Search for Approved PDFs
+router.get("/search", async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchResults = await conn.db.collection("approved_pdfs").find({
+      filename: { $regex: query, $options: "i" }
+    }).toArray();
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error("❌ Error searching PDFs:", error);
+    res.status(500).json({ error: "An error occurred while searching PDFs." });
+  }
+});
+
 export default router;
+

@@ -5,7 +5,7 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/LoginPage";
-import UploadPage from "./pages/UploadPage";
+import UploadPage from "./pages/UploadPage"; 
 import ReviewPage from "./pages/ReviewPage";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setUserRole(localStorage.getItem("userRole")); // Update state when userRole changes
+      setUserRole(localStorage.getItem("userRole")); 
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -29,24 +29,27 @@ function App() {
 
   return (
     <Router>
-      <Header userRole={userRole} setUserRole={setUserRole} /> {/* ✅ Make sure setUserRole is passed */}
+      <Header userRole={userRole} setUserRole={setUserRole} /> {/* Ensure Header gets userRole */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} /> 
+        <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} />
+        <Route path="/register" element={<Register />} />
 
+        {/* Protect Upload Page (Only for "student" role) */}
         <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
           <Route path="/upload" element={<UploadPage />} />
         </Route>
 
+        {/* Protect Review Page (Only for "faculty" role) */}
         <Route element={<ProtectedRoute allowedRoles={["faculty"]} />}>
           <Route path="/review" element={<ReviewPage />} />
         </Route>
-        <Route path="/register" element={<Register />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

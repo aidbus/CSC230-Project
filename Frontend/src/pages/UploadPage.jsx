@@ -5,12 +5,16 @@ function UploadPage() {
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [message, setMessage] = useState("");
 
+  // Handle file selection
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
+    setMessage(""); // Clear previous messages
   };
 
+  // Drag and Drop handlers
   const handleDragOver = (event) => {
     event.preventDefault();
     setDragging(true);
@@ -25,19 +29,37 @@ function UploadPage() {
     setDragging(false);
     const droppedFile = event.dataTransfer.files[0];
     setFile(droppedFile);
+    setMessage(""); // Clear previous messages
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  // Handle Upload to Backend
+  const handleUpload = async () => {
     if (!file) {
-      alert("⚠️ Please select a file before submitting.");
+      setMessage("⚠️ Please select a PDF file.");
       return;
     }
-    console.log("File uploaded:", file);
-    console.log("Description:", description);
-    alert("✅ File uploaded successfully!");
-    setFile(null);
-    setDescription("");
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    try {
+      const response = await fetch("http://localhost:4000/api/pdf/upload-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(`✅ Upload successful: ${data.filename}`);
+        setFile(null);
+        setDescription("");
+      } else {
+        setMessage(`❌ Upload failed: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage("❌ Upload error, check console.");
+      console.error("Upload Error:", error);
+    }
   };
 
   return (
@@ -56,7 +78,7 @@ function UploadPage() {
         ) : (
           <p>Drag & Drop a file here or <label className="file-label">Click to select</label></p>
         )}
-        <input type="file" onChange={handleFileChange} className="file-input" />
+        <input type="file" accept="application/pdf" onChange={handleFileChange} className="file-input" />
       </div>
 
       {/* Description Input */}
@@ -67,11 +89,15 @@ function UploadPage() {
       ></textarea>
 
       {/* Submit Button */}
-      <button onClick={handleSubmit} disabled={!file}>
+      <button onClick={handleUpload} disabled={!file}>
         Upload
       </button>
+
+      {/* Display Upload Message */}
+      {message && <p className="upload-message">{message}</p>}
     </div>
   );
 }
 
 export default UploadPage;
+

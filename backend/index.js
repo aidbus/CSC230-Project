@@ -2,11 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import authRoute from "./Routes/AuthRoute.js";
-import pdfRoutes from "./Routes/PdfRoute.js";  
+import pdfRoute from "./Routes/PdfRoute.js"; 
+const app = express();
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-
 dotenv.config();
+
 const { MONGO_URL, PORT } = process.env;
 
 mongoose
@@ -14,22 +15,24 @@ mongoose
     .then(() => console.log("Successfully connected to MongoDB"))
     .catch((err) => console.log(`DB CONNECTION ERROR ${err}`));
 
-const app = express();
-app.use(cors({
-    origin: ["http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    optionsSuccessStatus: 204,
-    allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});
+
+app.use(
+    cors({
+        origin: ["http://localhost:5173"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+        optionsSuccessStatus: 204,
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
 app.options("*", cors());
 app.use(cookieParser());
 app.use(express.json());
 
 app.use("/", authRoute);
-//enabled pdf upload and download
-app.use("/api/pdf", pdfRoutes); 
+app.use("/api/pdf", pdfRoute);
 
-app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
-});
+export default app;

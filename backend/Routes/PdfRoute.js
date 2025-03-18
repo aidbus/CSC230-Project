@@ -1,4 +1,3 @@
-
 import express from "express";
 import multer from "multer";
 import mongoose from "mongoose";
@@ -21,10 +20,12 @@ conn.once("open", () => {
   console.log("📁 GridFS Initialized");
 });
 
+router.get("/", (req, res) => {
+  res.json({ message: "PDF API is working!" });
+});
 
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
-
 
 router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   try {
@@ -34,12 +35,10 @@ router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
 
     console.log("📄 Upload request received:", req.file.originalname);
 
-    
     const readableStream = new Readable();
     readableStream.push(req.file.buffer);
     readableStream.push(null);
 
-   
     const uploadStream = gridFSBucket.openUploadStream(req.file.originalname);
     readableStream.pipe(uploadStream);
 
@@ -49,7 +48,7 @@ router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
     });
 
     uploadStream.on("finish", () => {
-      console.log("✅ File successfully uploaded to GridFS:", req.file.originalname);
+      console.log("✅ File successfully uploaded:", req.file.originalname);
       res.status(201).json({ message: "File uploaded successfully", filename: req.file.originalname });
     });
 
@@ -59,20 +58,23 @@ router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   }
 });
 
-
-router.get("/pdf/:filename", async (req, res) => {
+router.get("/:filename", async (req, res) => {
   try {
-    const file = await conn.db.collection("pdfs.files").findOne({ filename: req.params.filename });
+    const decodedFilename = decodeURIComponent(req.params.filename);
+    console.log(`📥 Download request for: ${decodedFilename}`);
+
+    const file = await conn.db.collection("pdfs.files").findOne({ filename: decodedFilename });
 
     if (!file) {
+      console.error("❌ File not found in GridFS:", decodedFilename);
       return res.status(404).json({ error: "File not found" });
     }
 
-    
-    const downloadStream = gridFSBucket.openDownloadStreamByName(req.params.filename);
+    res.set("Content-Type", "application/pdf");
+    res.set("Content-Disposition", `inline; filename="${decodedFilename}"`);
+
+    const downloadStream = gridFSBucket.openDownloadStreamByName(decodedFilename);
     downloadStream.pipe(res);
-    
-    console.log(`📥 Sending file: ${req.params.filename}`);
   } catch (error) {
     console.error("❌ Retrieval Error:", error);
     res.status(500).json({ error: "An error occurred while retrieving the file" });
@@ -80,3 +82,6 @@ router.get("/pdf/:filename", async (req, res) => {
 });
 
 export default router;
+
+
+

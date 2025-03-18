@@ -1,32 +1,13 @@
 import express from "express";
 import multer from "multer";
-import mongoose from "mongoose";
-import { GridFSBucket } from "mongodb";
-import dotenv from "dotenv";
 import { Readable } from "stream";
-
-dotenv.config();
+import { conn, gridFSBucket } from "../configs/db.js";
 
 const router = express.Router();
-
-const conn = mongoose.createConnection(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-let gridFSBucket;
-conn.once("open", () => {
-  gridFSBucket = new GridFSBucket(conn.db, { bucketName: "pdfs" });
-  console.log("📁 GridFS Initialized");
-});
-
-router.get("/", (req, res) => {
-  res.json({ message: "PDF API is working!" });
-});
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// ✅ Upload PDF
 router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   try {
     if (!req.file) {
@@ -58,6 +39,7 @@ router.post("/upload-pdf", upload.single("pdf"), async (req, res) => {
   }
 });
 
+// ✅ Get PDF by Filename
 router.get("/:filename", async (req, res) => {
   try {
     const decodedFilename = decodeURIComponent(req.params.filename);
@@ -82,6 +64,3 @@ router.get("/:filename", async (req, res) => {
 });
 
 export default router;
-
-
-

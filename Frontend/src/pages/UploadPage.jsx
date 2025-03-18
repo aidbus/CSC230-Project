@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./UploadPage.css"; // Ensure styles are applied
 
 function UploadPage() {
@@ -6,6 +6,17 @@ function UploadPage() {
   const [description, setDescription] = useState("");
   const [dragging, setDragging] = useState(false);
   const [message, setMessage] = useState("");
+  const [pdfs, setPdfs] = useState([]); // Store uploaded PDFs
+
+  // Fetch user's uploaded PDFs
+  useEffect(() => {
+    fetch("http://localhost:4000/api/pdf/my-pdfs", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setPdfs(data))
+      .catch((err) => console.error("Error fetching PDFs:", err));
+  }, []);
 
   // Handle file selection
   const handleFileChange = (event) => {
@@ -46,6 +57,7 @@ function UploadPage() {
       const response = await fetch("http://localhost:4000/api/pdf/upload-pdf", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -53,6 +65,9 @@ function UploadPage() {
         setMessage(`✅ Upload successful: ${data.filename}`);
         setFile(null);
         setDescription("");
+
+        // Refresh uploaded PDFs
+        setPdfs([...pdfs, { _id: data.filename, filename: file.name }]);
       } else {
         setMessage(`❌ Upload failed: ${data.error}`);
       }
@@ -95,6 +110,20 @@ function UploadPage() {
 
       {/* Display Upload Message */}
       {message && <p className="upload-message">{message}</p>}
+
+      {/* Display Uploaded PDFs */}
+      <h3>My Uploaded PDFs</h3>
+      {pdfs.length === 0 ? <p>No PDFs uploaded yet.</p> : (
+        <ul>
+          {pdfs.map((pdf) => (
+            <li key={pdf._id}>
+              <a href={`http://localhost:4000/api/pdf/view/${pdf._id}`} target="_blank" rel="noopener noreferrer">
+                {pdf.filename}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

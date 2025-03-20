@@ -1,28 +1,26 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Header.css"; // Import styles
-import logo from "../assets/256.avif"; // Keep the logo from your partner's version
+import "./Header.css";
+import logo from "../assets/256.avif";
 
 function Header({ userRole, setUserRole }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("userRole"); // Remove user role from storage
-    setUserRole(null); // Update state to re-render header
-    navigate("/"); // Redirect to homepage
+    localStorage.removeItem("userRole");
+    setUserRole(null);
+    navigate("/");
   };
-
-  const getUserRole = localStorage.getItem("userRole");
 
   return (
     <header>
-      {/* Small top banner with Logo & University Name */}
+      {/* Top banner */}
       <div className="top-banner">
         <img src={logo} alt="University Logo" />
         <h2>The University of Tampa</h2>
       </div>
 
-      {/* Large middle banner (CIRT + Subtitle) */}
+      {/* Middle banner */}
       <div className="main-banner">
         <h1 className="cirt-title">
           CIRT <br />
@@ -32,24 +30,31 @@ function Header({ userRole, setUserRole }) {
         </h1>
       </div>
 
-      {/* Navigation banner */}
+      {/* Nav */}
       <nav className="nav-banner">
         <ul>
           <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About</Link></li>
-          <li><Link to="/contact">Contact</Link></li>
 
-          
-          {localStorage.getItem("userRole") === null && <li><Link to="/login">Login</Link></li>}
-          
-          {/* Only show Upload if logged in as a Student */}
-          {localStorage.getItem("userRole") === "student" && <li><Link to="/upload">Upload Paper</Link></li>}
+          {/* Dropdown About */}
+          <li className="dropdown">
+            <span>About Us ▼</span>
+            <ul className="dropdown-content">
+              <li><Link to="/about">About Us</Link></li>
+              <li><Link to="/contact">Contact Us</Link></li>
+            </ul>
+          </li>
 
-          {/* Only show Review if logged in as Faculty */}
-          {localStorage.getItem("userRole") === "faculty" && <li><Link to="/review">Review Submissions</Link></li>}
-          
-          {/* Show Logout button if user is logged in */}
-          {localStorage.getItem("userRole") && (
+          {/* Login */}
+          {!userRole && <li><Link to="/login">Login</Link></li>}
+
+          {/* Student */}
+          {userRole === "student" && <li><Link to="/upload">Upload Paper</Link></li>}
+
+          {/* Faculty */}
+          {userRole === "faculty" && <li><Link to="/review">Review Submissions</Link></li>}
+
+          {/* Logout */}
+          {userRole && (
             <li>
               <button onClick={handleLogout} className="logout-button">Logout</button>
             </li>

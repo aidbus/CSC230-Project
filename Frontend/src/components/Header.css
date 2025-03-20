@@ -27,7 +27,7 @@ header {
 
 /* Large CIRT Title */
 .cirt-title {
-  font-size: 42px; /* Bigger text for "CIRT" */
+  font-size: 42px;
   font-weight: bold;
   background: linear-gradient(to right, rgb(150, 10, 30), rgb(200, 16, 46));
   color: white;
@@ -39,7 +39,7 @@ header {
 
 /* Subtitle below CIRT */
 .cirt-subtitle {
-  font-size: 22px; /* Smaller text */
+  font-size: 22px;
   margin: 0;
   background: linear-gradient(to right, rgb(150, 10, 30), rgb(200, 16, 46));
   color: white;
@@ -57,7 +57,7 @@ header {
 }
 
 /* Navigation links */
-.nav-banner ul {
+.nav-banner > ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
@@ -67,21 +67,67 @@ header {
 }
 
 .nav-banner li {
-  display: inline;
+  position: relative;
 }
 
-.nav-banner a {
+.nav-banner a, .nav-banner span {
   text-decoration: none;
   color: white;
   font-size: 18px;
   padding: 12px 18px;
   border-radius: 5px;
   transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+  cursor: pointer;
 }
 
 /* Hover effect */
-.nav-banner a:hover {
-  background-color: rgb(200, 16, 46); /* UTampa Red */
+.nav-banner a:hover, .nav-banner span:hover {
+  background-color: rgb(200, 16, 46);
+  color: white;
+}
+
+/* Dropdown styling */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: black;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 150px;
+  top: 100%;
+  left: 0;
+  border: 1px solid #444;
+  z-index: 999;
+}
+
+.dropdown-content li {
+  display: block;
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Logout button styling */
+.logout-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  padding: 12px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.logout-button:hover {
+  background-color: rgb(200, 16, 46);
   color: white;
 }
 
@@ -99,8 +145,14 @@ header {
     gap: 15px;
   }
 
-  .nav-banner a {
+  .nav-banner a, .nav-banner span, .logout-button {
     display: block;
     width: 100%;
+  }
+
+  .dropdown-content {
+    position: static;
+    border: none;
+    box-shadow: none;
   }
 }

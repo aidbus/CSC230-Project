@@ -92,6 +92,44 @@ router.post("/upload-pdf", authenticateUser, upload.single("pdf"), async (req, r
   }
 });
 
+// Upload Poster with user ownership tracking
+router.post("/upload-poster", authenticateUser, upload.single("pdf"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    console.log("🖼️ Poster upload request received:", req.file.originalname);
+
+    const readableStream = new Readable();
+    readableStream.push(req.file.buffer);
+    readableStream.push(null);
+
+    const uploadStream = gridFSBucket.openUploadStream(req.file.originalname, {
+      metadata: { uploadedBy: req.user._id, status: "Pending", type: "poster", comment: "" },
+    });
+
+    readableStream.pipe(uploadStream);
+
+    uploadStream.on("error", (error) => {
+      console.error("❌ GridFS Poster Upload Error:", error);
+      return res.status(500).json({ error: "Poster upload failed" });
+    });
+
+    uploadStream.on("finish", () => {
+      console.log("✅ Poster successfully uploaded:", req.file.originalname);
+      res.status(201).json({
+        message: "Poster uploaded successfully",
+        filename: req.file.originalname,
+      });
+    });
+
+  } catch (error) {
+    console.error("❌ Poster Upload Error:", error);
+    res.status(500).json({ error: "An error occurred while uploading poster" });
+  }
+});
+
 // Fetch all PDFs (Faculty Only)
 router.get("/all", authenticateUser, async (req, res) => {
   try {
@@ -114,13 +152,41 @@ router.get("/my-pdfs", authenticateUser, async (req, res) => {
       return res.status(403).json({ error: "Access denied. Students only." });
     }
 
-    const files = await conn.db.collection("pdfs.files").find({ "metadata.uploadedBy": req.user._id }).toArray();
+    const files = await conn.db.collection("pdfs.files").find({ 
+      "metadata.uploadedBy": req.user._id,
+      $or: [
+        { "metadata.type": { $exists: false } }, // fallback for older PDFs
+        { "metadata.type": "pdf" }
+      ]
+    }).toArray();
+
     res.json(files);
   } catch (error) {
     console.error("❌ Error retrieving student PDFs:", error);
     res.status(500).json({ error: "Server error retrieving PDFs" });
   }
 });
+
+
+// Fetch Posters uploaded by the logged-in student
+router.get("/my-posters", authenticateUser, async (req, res) => {
+  try {
+    if (req.user.role !== "student") {
+      return res.status(403).json({ error: "Access denied. Students only." });
+    }
+
+    const files = await conn.db.collection("pdfs.files").find({ 
+      "metadata.uploadedBy": req.user._id,
+      "metadata.type": "poster"
+    }).toArray();
+
+    res.json(files);
+  } catch (error) {
+    console.error("❌ Error retrieving student posters:", error);
+    res.status(500).json({ error: "Server error retrieving posters" });
+  }
+});
+
 
 // Stream a specific PDF by file ID
 router.get("/view/:fileId", authenticateUser, async (req, res) => {
@@ -170,6 +236,8 @@ router.put("/update-status/:fileId", authenticateUser, async (req, res) => {
       return res.status(404).json({ error: "File not found or status unchanged." });
     }
 
+  
+
     if (status === "Approved") {
       const file = await conn.db.collection("pdfs.files").findOne({ _id: fileId });
       await conn.db.collection("approved_pdfs").insertOne({
@@ -177,8 +245,11 @@ router.put("/update-status/:fileId", authenticateUser, async (req, res) => {
         filename: file.filename,
         uploadedBy: file.metadata.uploadedBy,
         comment,
+        approvedDate: new Date() // ✅ add approval timestamp
       });
     }
+    
+
 
     res.json({ message: `PDF marked as ${status} with comment.` });
   } catch (error) {
@@ -189,18 +260,16 @@ router.put("/update-status/:fileId", authenticateUser, async (req, res) => {
 
 // Search for Approved PDFs
 router.get("/search", async (req, res) => {
-  try {
-    const { query } = req.query;
-    const searchResults = await conn.db.collection("approved_pdfs").find({
-      filename: { $regex: query, $options: "i" }
-    }).toArray();
+  const { query } = req.query;
+  const searchResults = await conn.db.collection("approved_pdfs")
+    .find({ filename: { $regex: query, $options: "i" } })
+    .sort({ approvedDate: -1 }) // ✅ Sort by most recent approval
+    .limit(3)
+    .toArray();
 
-    res.json(searchResults);
-  } catch (error) {
-    console.error("❌ Error searching PDFs:", error);
-    res.status(500).json({ error: "An error occurred while searching PDFs." });
-  }
+  res.json(searchResults);
 });
+
 
 export default router;
 

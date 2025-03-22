@@ -1,31 +1,37 @@
 import React, { useEffect, useState } from "react";
-import "./UploadPage.css"; // Ensure styles are applied
+import "./UploadPage.css";
 
-function UploadPage() {
+function UploadPage({ type }) {
   const [file, setFile] = useState(null);
   const [description, setDescription] = useState("");
   const [dragging, setDragging] = useState(false);
   const [message, setMessage] = useState("");
-  const [pdfs, setPdfs] = useState([]); // Store uploaded PDFs
+  const [uploads, setUploads] = useState([]);
 
-  // Fetch user's uploaded PDFs
+  const title = type === "pdf" ? "PDF" : "Poster";
+  const uploadUrl = type === "pdf"
+    ? "http://localhost:4000/api/pdf/upload-pdf"
+    : "http://localhost:4000/api/pdf/upload-poster";
+
+  const fetchUrl = type === "pdf"
+  ? "http://localhost:4000/api/pdf/my-pdfs"
+  : "http://localhost:4000/api/pdf/my-posters";
+
+
+  // Fetch user's uploaded files (PDF or Poster)
   useEffect(() => {
-    fetch("http://localhost:4000/api/pdf/my-pdfs", {
-      credentials: "include",
-    })
+    fetch(fetchUrl, { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setPdfs(data))
-      .catch((err) => console.error("Error fetching PDFs:", err));
-  }, []);
+      .then((data) => setUploads(data))
+      .catch((err) => console.error("Error fetching uploads:", err));
+  }, [fetchUrl]);
 
-  // Handle file selection
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
-    setMessage(""); // Clear previous messages
+    setMessage("");
   };
 
-  // Drag and Drop handlers
   const handleDragOver = (event) => {
     event.preventDefault();
     setDragging(true);
@@ -40,13 +46,12 @@ function UploadPage() {
     setDragging(false);
     const droppedFile = event.dataTransfer.files[0];
     setFile(droppedFile);
-    setMessage(""); // Clear previous messages
+    setMessage("");
   };
 
-  // Handle Upload to Backend
   const handleUpload = async () => {
     if (!file) {
-      setMessage("⚠️ Please select a PDF file.");
+      setMessage("⚠️ Please select a file.");
       return;
     }
 
@@ -54,7 +59,7 @@ function UploadPage() {
     formData.append("pdf", file);
 
     try {
-      const response = await fetch("http://localhost:4000/api/pdf/upload-pdf", {
+      const response = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -65,9 +70,7 @@ function UploadPage() {
         setMessage(`✅ Upload successful: ${data.filename}`);
         setFile(null);
         setDescription("");
-
-        // Refresh uploaded PDFs
-        setPdfs([...pdfs, { _id: data.filename, filename: file.name }]);
+        setUploads([...uploads, { _id: data.filename, filename: file.name }]);
       } else {
         setMessage(`❌ Upload failed: ${data.error}`);
       }
@@ -79,9 +82,9 @@ function UploadPage() {
 
   return (
     <div className="upload-container">
-      <h2>Upload a Publication</h2>
+      <h2>Upload a {title}</h2>
 
-      {/* Drag and Drop Upload Box */}
+      {/* Drag & Drop Box */}
       <div 
         className={`upload-box ${dragging ? "dragging" : ""}`} 
         onDragOver={handleDragOver} 
@@ -103,22 +106,20 @@ function UploadPage() {
         onChange={(e) => setDescription(e.target.value)}
       ></textarea>
 
-      {/* Submit Button */}
-      <button onClick={handleUpload} disabled={!file}>
-        Upload
-      </button>
+      {/* Upload Button */}
+      <button onClick={handleUpload} disabled={!file}>Upload</button>
 
-      {/* Display Upload Message */}
       {message && <p className="upload-message">{message}</p>}
 
-      {/* Display Uploaded PDFs */}
-      <h3>My Uploaded PDFs</h3>
-      {pdfs.length === 0 ? <p>No PDFs uploaded yet.</p> : (
+      <h3>My Uploaded {title}s</h3>
+      {uploads.length === 0 ? (
+        <p>No {title}s uploaded yet.</p>
+      ) : (
         <ul>
-          {pdfs.map((pdf) => (
-            <li key={pdf._id}>
-              <a href={`http://localhost:4000/api/pdf/view/${pdf._id}`} target="_blank" rel="noopener noreferrer">
-                {pdf.filename}
+          {uploads.map((item) => (
+            <li key={item._id}>
+              <a href={`http://localhost:4000/api/pdf/view/${item._id}`} target="_blank" rel="noopener noreferrer">
+                {item.filename}
               </a>
             </li>
           ))}
@@ -129,4 +130,3 @@ function UploadPage() {
 }
 
 export default UploadPage;
-

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
+
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
@@ -8,12 +9,13 @@ import LoginPage from "./pages/LoginPage";
 import UploadPage from "./pages/UploadPage"; 
 import ReviewPage from "./pages/ReviewPage";
 import Register from "./pages/Register";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 function App() {
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || null);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -29,27 +31,30 @@ function App() {
 
   return (
     <Router>
-      <Header userRole={userRole} setUserRole={setUserRole} /> {/* Ensure Header gets userRole */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} />
-        <Route path="/register" element={<Register />} />
+      <Header userRole={userRole} setUserRole={setUserRole} />
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/login" element={<LoginPage setUserRole={setUserRole} />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Protect Upload Page (Only for "student" role) */}
-        <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
-          <Route path="/upload" element={<UploadPage />} />
-        </Route>
+          {/* Student protected routes */}
+          <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
+            <Route path="/upload-pdf" element={<UploadPage type="pdf" />} />
+            <Route path="/upload-poster" element={<UploadPage type="poster" />} />
+          </Route>
 
-        {/* Protect Review Page (Only for "faculty" role) */}
-        <Route element={<ProtectedRoute allowedRoles={["faculty"]} />}>
-          <Route path="/review" element={<ReviewPage />} />
-        </Route>
-      </Routes>
+          {/* Faculty protected route */}
+          <Route element={<ProtectedRoute allowedRoles={["faculty"]} />}>
+            <Route path="/review" element={<ReviewPage />} />
+          </Route>
+        </Routes>
+      </main>
+      <Footer />
     </Router>
   );
 }
 
 export default App;
-

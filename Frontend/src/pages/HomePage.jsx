@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import RecentSubmissions from "../components/RecentSubmissions";
 
 const HomePage = () => {
   const [query, setQuery] = useState("");
@@ -44,6 +45,9 @@ const HomePage = () => {
           <p>No results found.</p>
         )}
       </div>
+
+      {/* Add the Recently Approved Section below */}
+      <RecentSubmissions />
     </div>
   );
 };

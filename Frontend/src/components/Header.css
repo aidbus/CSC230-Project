@@ -6,6 +6,7 @@ header {
 /* Top banner (University Name & Logo) */
 .top-banner {
   background-color: black;
+  font-family: "Univers LT Std", "57 Condensed";
   color: white;
   display: flex;
   align-items: center;
@@ -21,19 +22,20 @@ header {
 /* University Name (Left-aligned) */
 .top-banner h2 {
   font-size: 16px;
-  font-weight: normal;
+  font-weight: bold;
   margin: 0;
 }
 
 /* Large CIRT Title */
 .cirt-title {
   font-size: 42px;
+  font-family: "Univers LT Std", "57 Condensed";
+  font-style: italic;
   font-weight: bold;
   background: linear-gradient(to right, rgb(150, 10, 30), rgb(200, 16, 46));
   color: white;
   margin: 0;
-  padding: 5px 85px;
-  font-family: "Univers Condensed", Arial, sans-serif;
+  padding: 5px 34px;
   display: block;
 }
 

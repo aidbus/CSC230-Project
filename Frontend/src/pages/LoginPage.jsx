@@ -4,7 +4,7 @@ import axios from "axios";
 import {ToastContainer, toast} from "react-toastify";
 import "./LoginPage.css";
 
-const LoginPage = () => {
+const LoginPage = ({ setUserRole}) => {
     const navigate = useNavigate();
     const [inputValue, setInputValue] = useState({
         email: "",
@@ -33,6 +33,7 @@ const LoginPage = () => {
             const {success, message, role} = data;
             if (success) {
                 localStorage.setItem("userRole", role)
+                setUserRole(role); // MANUAL REFRESH ISSUE FIX
                 toast.success(message, {position: "bottom-left"});
                 setTimeout(() => {
                     navigate("/");

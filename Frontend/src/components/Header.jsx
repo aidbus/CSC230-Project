@@ -23,10 +23,7 @@ function Header({ userRole, setUserRole }) {
       {/* Middle banner */}
       <div className="main-banner">
         <h1 className="cirt-title">
-          CIRT <br />
-          <span className="cirt-subtitle">
-            Criminology Institute for Research and Training
-          </span>
+          Criminology Institute for Research and Training <br />
         </h1>
       </div>
 
@@ -64,7 +61,7 @@ function Header({ userRole, setUserRole }) {
           {/* Logout */}
           {userRole && (
             <li>
-              <button onClick={handleLogout} className="logout-button">Logout</button>
+              <span onClick={handleLogout} className="logout-button">Logout</span>
             </li>
           )}
         </ul>

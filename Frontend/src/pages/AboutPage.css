@@ -1,6 +1,33 @@
-.paragraph {
-    text-align: center;
-    width: 100em;
-    /*border: 1px solid #000000;*/
-    word-break: keep-all;
-}
+/* Prevent horizontal scrolling */
+body {
+    overflow-x: hidden; /* Hides any horizontal overflow */
+  }
+  
+  /* Style for paragraphs */
+  .paragraph {
+    text-align: left; /* Ensure text is aligned to the left */
+    width: 100%; /* Paragraph spans the full width */
+    word-wrap: break-word; /* Ensures long words break properly */
+    line-height: 1.5; /* Optional: improves readability by adding line spacing */
+    padding: 0 10px; /* Optional: adds some padding to prevent text from touching edges */
+    box-sizing: border-box; /* Ensures padding doesn’t affect the width calculation */
+  }
+  
+  h2 {
+    text-indent: 30px; /* Indents the heading */
+  }
+  
+  /* Indent the first line of each paragraph */
+  .paragraph::first-line,
+  .middle-paragraph::first-line {
+    text-indent: 30px; /* Indents only the first line */
+  }
+  
+  /* Normal middle paragraph without any centering or indentation */
+  .middle-paragraph {
+    text-align: left; /* Left-align the text */
+    width: 100%; /* Paragraph spans the full width */
+    padding: 0 10px; /* Optional: adds some padding to prevent text from touching edges */
+    box-sizing: border-box; /* Ensures padding doesn’t affect the width calculation */
+  }
+  
